@@ -1,1 +1,3 @@
+*.bz2
+# Ignore compressed Wikipedia dump files
 wiki-dump1.bz2
