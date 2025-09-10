@@ -1,13 +1,12 @@
 # test_parse_wiki_dump.py
 # File to test parse_wiki_dump.py functionality
-# Run with: python -m unittest test_parse_wiki_dump.py
+# Run with: python3 -m unittest test_parser.py
 
 import json
 import unittest
 import tempfile
 from pathlib import Path
-
-from parse_wiki_dump import parse_wiki_dump
+from parser import parse_wiki_dump
 
 def read_jsonl(path):
     with open(path, "r", encoding="utf-8") as f:
