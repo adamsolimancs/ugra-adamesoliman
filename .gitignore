@@ -1,4 +1,11 @@
-*.bz2
 # Ignore compressed Wikipedia dump files
+wiki_dumps
+*.bz2
 wiki-dump1.bz2
+notable_humans.zip
+
+# output files
+wiki_articles.jsonl
+
+
 __pycache__
