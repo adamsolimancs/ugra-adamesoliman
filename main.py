@@ -14,26 +14,23 @@ def combine_files(source_files, destination_file):
         for filepath in source_files:
             with open(filepath, 'rb') as infile:
                 outfile.write(infile.read())
-            # Optional: remove the partial file after it has been merged
-            # os.remove(filepath)
+            
+            os.remove(filepath) # remove the partial file after it has been merged
 
 if __name__ == "__main__":
     start_time = time.time()
     
-    # Define input and output directories
-    input_dir = Path('./wiki_dumps')
-    # Create a temporary directory for the output of each process
-    temp_output_dir = Path('./temp_parsed_output')
-    temp_output_dir.mkdir(exist_ok=True)
-
-    # Final output file names from your original script
     final_parsed_jsonl = "wiki_articles.jsonl"
     extracted_jsonl = "raw_residences.jsonl"
     structured_jsonl = "final_residences.jsonl"
-
-
+    
+    input_dir = Path('./wiki_dumps')
+    
     # --- PREPARE TASKS FOR PARALLEL PROCESSING ---
-    # Dynamically find all .bz2 files in the input directory
+    temp_output_dir = Path('./temp_parsed_output') # temporary directory for the output of each process
+    temp_output_dir.mkdir(exist_ok=True)
+    
+    # Find all .bz2 files in the input directory
     dump_paths = list(input_dir.glob('*.bz2'))
     if not dump_paths:
         print(f"Error: No .bz2 files found in the directory '{input_dir}'.")
@@ -55,11 +52,9 @@ if __name__ == "__main__":
     # It automatically uses the number of available CPU cores
     print(f"Starting parallel parsing with {multiprocessing.cpu_count()} cores...")
     with multiprocessing.Pool() as pool:
-        # starmap is perfect for functions that take multiple arguments
         pool.starmap(parse_wiki_dump, tasks)
 
     print("\nAll individual dump files have been parsed.")
-
 
     # --- COMBINE RESULTS ---
     # Get the list of all temporary files created by the processes
@@ -69,8 +64,8 @@ if __name__ == "__main__":
     else:
         print("Warning: No temporary files were created. The final output will be empty.")
     
-    end_time = time.time()
-    print(f"✔ Total parsing and combining finished in {end_time - start_time:.2f} seconds.")
+    parsing_end_time = time.time()
+    print(f"✔ Total parsing and combining finished in {parsing_end_time - start_time:.2f} seconds.")
     
     
     # --- 5. EXTRACT IMPORTANT DATA ---

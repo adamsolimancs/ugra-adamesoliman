@@ -47,9 +47,12 @@ def parse_wiki_dump(dump_path, output_jsonl_path):
                 parser.feed(chunk)
                 # parser.read_events() will yield events as they are parsed from the chunk
                 for event, elem in parser.read_events(): # type: ignore                    
-                    # We only care about the 'end' event for a 'page' element
-                    if event == 'end' and elem.tag == f'{NS}page': # type: ignore
-                        i += 1                   
+                    if event == 'end' and elem.tag == f'{NS}page': # type: ignore # Find page elems
+                        # Skip redirect pages
+                        if elem.find(f'.//{NS}redirect') is not None: # type: ignore
+                            elem.clear() # type: ignore
+                            continue
+
                         # Find the articles <ns=0> using the NAMESPACE.
                         if elem.findtext(f'.//{NS}ns') == '0': # type: ignore
                             # Find title and text
@@ -61,9 +64,9 @@ def parse_wiki_dump(dump_path, output_jsonl_path):
                                     'title': title,
                                     'text': text
                                 }
-                                
-                                # print(f"Writing record {i} to out_file:\t {record}")    # DEBUG
                                 out_file.write(json.dumps(record) + '\n')
+                                
+                                i += 1
 
                         elem.clear() # type: ignore # Clear the element from memory, keep memory usage low
 
