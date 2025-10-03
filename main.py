@@ -1,11 +1,10 @@
 # Main orchestration script to process Wikipedia dump and extract structured residence data
-from parser import parse_wiki_dump
 import multiprocessing
 from pathlib import Path
 import os
 import time
-
-# from extractor import process_pages
+from parser import parse_wiki_dump
+from extractor import process_pages
 
 def combine_files(source_files, destination_file):
     """Concatenates multiple files into a single destination file."""
@@ -69,7 +68,8 @@ if __name__ == "__main__":
     
     
     # --- 5. EXTRACT IMPORTANT DATA ---
-    # process_pages(final_parsed_jsonl, extracted_jsonl)
+    # NOTE: hardcoded path to the notable humans CSV
+    process_pages(final_parsed_jsonl, extracted_jsonl, 'notable_humans/result.csv')
 
     # --- 6. LLM USAGE ---
     # ...

@@ -2,9 +2,12 @@
 wiki_dumps
 *.bz2
 wiki-dump1.bz2
+
 notable_humans.zip
+notable_humans
 
 # output files
+temp_parsed_output
 wiki_articles.jsonl
 
 

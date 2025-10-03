@@ -11,18 +11,17 @@ Rather than web scraping live Wikipedia pages, it uses an offline Wikipedia dump
 - pip for installing packages
 
 #### Installation
-Clone the repository and install the required dependencies:
+Clone the repository (SSH method below) and install the required dependencies:
 '''
 bash
-git clone https://github.com/your-username/your-repo.git
-cd your-repo
+git clone git@github.com:adamsolimancs/ugra-adamesoliman.git
+cd ugra-adamesoliman
 pip install -r requirements.txt
 '''
 
 #### Directory Setup (if not already existing)
 - Place your compressed Wikipedia dump files (e.g., enwiki-latest-pages-articles.xml.bz2) inside a wiki_dumps/ directory in the project root.
-- Create an output file in the root of the project for the parsing script: '''wiki_articles.jsonl'''
-
+- Have a CSV of notable humans located at ./notable_humans/result.csv 
 - Run the pipeline: python main.py
 
 ---
