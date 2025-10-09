@@ -9,6 +9,9 @@ notable_humans
 # output files
 temp_parsed_output
 wiki_articles.jsonl
+output_residences.jsonl
 
+
+test_extract.py
 
 __pycache__

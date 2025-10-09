@@ -1,66 +1,79 @@
-import mwparserfromhell
-import re
-import json
 import csv
+import json
+import random
+import re
 
-# Extract residence information from Wikipedia page wikitext
-def extract_residence_from_wikitext(wikitext):
-    """Parse the wikitext and extract residence information."""
-    wikicode = mwparserfromhell.parse(wikitext)
-    # Find any infobox templates in the text
-    infoboxes = wikicode.filter_templates(matches='infobox', recursive=True)
-    residences = []
-    for tpl in infoboxes:
-        # Some infobox template names are like 'Infobox person', 'Infobox scientist', etc.
-        # Using matches='infobox' catches any template with 'infobox' in the name.
-        if tpl.has("residence"):
-            # Get the raw value of the residence parameter
-            value = str(tpl.get("residence").value).strip()
-            # Split multiple residences by <br> or commas
-            parts = re.split(r'<br\s*/?>|,', value)
-            for part in parts:
-                part = part.strip()
-                if part:
-                    residences.append(part)
-    # If no residence found in infobox, search the plain text for "resides in ..."
-    if not residences:
-        matches = re.findall(r'resid(?:e|ence|es) in ([A-Za-z ,\-]+)', wikitext, re.IGNORECASE)
-        # Add each found location (already a string) to residences list
-        for loc in matches:
-            loc = loc.strip()
-            if loc:
-                residences.append(loc)
-    return residences
+import mwparserfromhell
 
-# Main function to process pages and extract residences for notable humans
-def process_pages(input_jsonl, output_jsonl, notable_csv):
-    # Load the set of notable names from the CSV
-    famous_names = set()
+# Precompile expressions used for sentence parsing and residence detection
+SENTENCE_SPLIT_RE = re.compile(r'(?<=[.!?])\s+(?=[A-Z0-9])')
+RESIDENCE_HINT_RE = re.compile(
+    r'\b(resides?|residing|residence|lives?|living|based|settled|moved)\b',
+    re.IGNORECASE,
+)
+
+
+def load_famous_name_map(notable_csv):
+    """Return a mapping of article titles to their raw CSV tokens."""
+    title_map = {}
     with open(notable_csv, 'r', encoding='utf-8') as csvfile:
-        reader = csv.DictReader(csvfile)
-        for row in reader:
-            name = row.get('name')
-            if name:
-                famous_names.add(name.strip().replace('_', ' '))
-    
-    print(f"Here are 15 random famous people loaded from the CSV:")
-    for name in list(famous_names)[:15]:
-        print(f"Notable person: {name}")
+        for row in csv.DictReader(csvfile):
+            raw_name = row.get('name')
+            if not raw_name:
+                continue
+            pretty_title = raw_name.strip().replace('_', ' ')
+            title_map[pretty_title] = raw_name.strip()
+    return title_map
 
-    # Open input and output files
+
+def extract_residence_sentences(wikitext):
+    """Return sentences from the article text that refer to residences."""
+    plain_text = mwparserfromhell.parse(wikitext).strip_code()
+    plain_text = re.sub(r'\s+', ' ', plain_text).strip()
+    if not plain_text:
+        return []
+
+    sentences = SENTENCE_SPLIT_RE.split(plain_text)
+    matches = []
+    seen = set()
+    for sentence in sentences:
+        candidate = sentence.strip()
+        if not candidate:
+            continue
+        if RESIDENCE_HINT_RE.search(candidate):
+            # Deduplicate exact sentence repeats
+            if candidate not in seen:
+                matches.append(candidate)
+                seen.add(candidate)
+    return matches
+
+
+def process_pages(input_jsonl, output_jsonl, notable_csv):
+    """Process JSONL wiki pages and extract residence sentences for notable people."""
+    famous_titles = load_famous_name_map(notable_csv)
+
+    sample_titles = random.sample(
+        list(famous_titles.keys()),
+        k=min(15, len(famous_titles)),
+    ) if famous_titles else []
+    if sample_titles:
+        print(f"Here are {len(sample_titles)} random famous people loaded from the CSV:")
+        for name in sample_titles:
+            print(f"Notable person: {name}")
+
     with open(input_jsonl, 'r', encoding='utf-8') as infile, \
-         open(output_jsonl, 'w', encoding='utf-8') as outfile:
+            open(output_jsonl, 'w', encoding='utf-8') as outfile:
         for line in infile:
             page = json.loads(line)
-            title = page.get('title')
-            text = page.get('text') or ""
-            # Skip pages that are not in our famous people list
-            if title not in famous_names:
-                continue
-            # Extract residence information from the page text
-            residences = extract_residence_from_wikitext(text)
-            # Prepare the output record
-            output_record = {'title': title, 'residences_raw': residences}
-            # Write it as a JSON line
-            outfile.write(json.dumps(output_record) + '\n')
+            title = page.get('title', '')
+            text = page.get('text') or ''
 
+            if title not in famous_titles:
+                continue
+
+            residence_sentences = extract_residence_sentences(text)
+            output_record = {
+                'name': title,
+                'residence_sentences': residence_sentences,
+            }
+            outfile.write(json.dumps(output_record) + '\n')
