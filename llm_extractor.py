@@ -5,13 +5,7 @@ import re
 
 import mwparserfromhell
 
-# Precompile expressions used for sentence parsing and residence detection
 SENTENCE_SPLIT_RE = re.compile(r'(?<=[.!?])\s+(?=[A-Z0-9])')
-RESIDENCE_HINT_RE = re.compile(
-    r'\b(resides?|residing|residence|lives?|living|based|settled|moved)\b',
-    re.IGNORECASE,
-)
-
 
 def load_famous_name_map(notable_csv):
     """Return a mapping of article titles to their raw CSV tokens."""
@@ -40,11 +34,10 @@ def extract_residence_sentences(wikitext):
         candidate = sentence.strip()
         if not candidate:
             continue
-        if RESIDENCE_HINT_RE.search(candidate):
-            # Deduplicate exact sentence repeats
-            if candidate not in seen:
-                matches.append(candidate)
-                seen.add(candidate)
+        
+        # TODO: Model classification logic goes here
+        
+                
     return matches
 
 
@@ -52,6 +45,7 @@ def process_pages(input_jsonl, output_jsonl, notable_csv):
     """Process JSONL wiki pages and extract residence sentences for notable people."""
     famous_titles = load_famous_name_map(notable_csv)
 
+    # debug: print some sample names
     sample_titles = random.sample(
         list(famous_titles.keys()),
         k=min(15, len(famous_titles)),
