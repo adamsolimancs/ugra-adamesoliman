@@ -9,9 +9,14 @@ notable_humans
 # output files
 *.jsonl
 
+# test files
+test_extractor.py
 
-# ignore test files
-test_regex.py
-test_llm.py
+# regex extractor file not used anymore, llm preferred
+regex_extractor.py
 
+# saved model/embeddings
+*.joblib
+
+.DS_STORE
 __pycache__

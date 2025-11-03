@@ -1,15 +1,16 @@
 import json
 import joblib
+from pathlib import Path
 from sentence_transformers import SentenceTransformer
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score, f1_score, confusion_matrix
 
-# 1. Prepare sample dataset in a JSONL file: sample_data.jsonl
+# 1. Prepare sample dataset in a JSONL file: train_data.jsonl
 # 2. Load data from JSONL file
 texts = []
 labels = []
-with open("sample_data.jsonl", "r") as f:
+with open("train_data.jsonl", "r") as f:
     for line in f:
         if line.strip():  # skip empty lines if any
             record = json.loads(line)
@@ -39,6 +40,7 @@ print(f"F1 Score: {f1:.2f}")
 print("Confusion Matrix:")
 print(conf_mat)
 
-# 7. Save model and embedder pipeline
-joblib.dump((embedder, clf), "residence_classifier.joblib")
-print("Model and embedding pipeline saved to residence_classifier.joblib")
+# 7. Save model and embedder pipeline next to this script
+model_path = Path(__file__).resolve().parent / "residence_classifier.joblib"
+joblib.dump((embedder, clf), model_path)
+print(f"Model and embedding pipeline saved to {model_path}")
