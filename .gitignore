@@ -18,5 +18,6 @@ regex_extractor.py
 # saved model/embeddings
 *.joblib
 
+*.env
 .DS_STORE
 __pycache__

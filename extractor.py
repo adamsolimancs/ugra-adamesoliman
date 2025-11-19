@@ -21,7 +21,7 @@ def _load_model():
     if _EMBEDDER is not None and _CLF is not None:
         return
     try:
-        print("⏳ Loading residence classifier model...")
+        print("Loading residence classifier model...")
         _EMBEDDER, _CLF = joblib.load(_MODEL_PATH)
     except Exception as e:
         print(f"Warning: unable to load model at {_MODEL_PATH}: {e}")
@@ -29,7 +29,7 @@ def _load_model():
 
 
 def load_famous_name_map(notable_csv):
-    """Return a mapping of article titles to their raw CSV tokens."""
+    """Return a mapping of canonical article titles to their raw CSV tokens."""
     title_map = {}
     with open(notable_csv, 'r', encoding='utf-8') as csvfile:
         for row in csv.DictReader(csvfile):
@@ -37,7 +37,7 @@ def load_famous_name_map(notable_csv):
             if not raw_name:
                 continue
             pretty_title = raw_name.strip().replace('_', ' ')
-            title_map[pretty_title] = raw_name.strip()
+            title_map[pretty_title.upper()] = raw_name.strip()
     return title_map
 
 
@@ -58,7 +58,7 @@ def extract_residence_sentences(wikitext):
         return []
 
     # Embed all sentences in a single batch for efficiency
-    print("⏳ Embedding and classifying residence sentences...")
+    print("Embedding and classifying residence sentences...")
     X = _EMBEDDER.encode(sentences, show_progress_bar=False)
     probs = _CLF.predict_proba(X)[:, 1]
 
@@ -92,8 +92,9 @@ def process_pages(input_jsonl, output_jsonl, notable_csv):
             title = page.get('title', '')
             text = page.get('text') or ''
 
-            # fix for duplicate names
-            if title not in famous_titles:
+            normalized_title = title.strip().upper()
+
+            if normalized_title not in famous_titles:
                 continue
 
             residence_sentences = extract_residence_sentences(text)

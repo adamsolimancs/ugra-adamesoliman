@@ -1,8 +1,9 @@
 # Main orchestration script to process Wikipedia dump and extract structured residence data
-import multiprocessing
-from pathlib import Path
 import os
 import time
+import subprocess
+import multiprocessing
+from pathlib import Path
 from parser import parse_wiki_dump
 from extractor import process_pages
 
@@ -69,8 +70,14 @@ if __name__ == "__main__":
     
     # --- 5. EXTRACT IMPORTANT DATA ---
     # NOTE: hardcoded path to the notable humans CSV
+    # NOTE: The model must be trained first by running train_classifier.py
     process_pages(final_parsed_jsonl, extracted_jsonl, 'notable_humans/result.csv')
 
     # --- 6. LLM USAGE ---
-    # ...
+    llm_start_time = time.time()
+    try:
+        subprocess.run(["python3", "llm_processing.py"], check=True)
+    finally:
+        elapsed = time.time() - llm_start_time
+        print(f"✔ LLM post-processing finished in {elapsed:.2f} seconds.")
     

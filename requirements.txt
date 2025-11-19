@@ -2,3 +2,4 @@
 mwparserfromhell
 scikit-learn
 sentence-transformers
+ollama
